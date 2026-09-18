@@ -2,8 +2,8 @@
 // Created by kirillr on 18.09.2026.
 //
 
-#ifndef CONTAINERS_EXCEPTIONS_H
-#define CONTAINERS_EXCEPTIONS_H
+#ifndef CONTAINERS_EXCEPTION_H
+#define CONTAINERS_EXCEPTION_H
 #include <cstdlib>
 #include <iostream>
 #include <ostream>

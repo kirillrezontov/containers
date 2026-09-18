@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_library(containers STATIC library.cpp
         vector.h
-        exceptions.h
+        exception.h
         library.cpp
-        move.h)
+        move.h
+        set.h
+        algorythm.h
+        iterator.h)

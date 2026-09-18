@@ -7,149 +7,198 @@
 #include <cstdlib>
 #include "move.h"
 #include "exception.h"
-#include "exceptions.h"
+#include "iterator.h"
 
-template<typename T>
-class vector {
-    int64_t _capacity;
-    int64_t _size;
-    T* _arr;
+namespace mct {
 
-    int64_t cap_count(int64_t n) const {
-        n = n ? n : 2;
-        while (n < _capacity) { n<<= 1; }
-        return n;
-    }
+    template<typename T>
+    class vector {
+        int64_t _capacity;
+        int64_t _size;
+        T* _arr;
 
-    static void destroy(T* start, T* end) {
-        while (start < end) {
-            start->~T(); ++start;
+        int64_t cap_count(int64_t n) const {
+            n = n ? n : 2;
+            while (n < _capacity) { n<<= 1; }
+            return n;
         }
-    }
+
+        static void destroy(T* start, T* end) {
+            while (start < end) {
+                start->~T(); ++start;
+            }
+        }
 
     public:
 
-    using iterator = T*;
-    using const_iterator = const T*;
+        int64_t size() const { return _size; }
+        int64_t capacity() const { return _capacity; }
 
-    vector(): _capacity(0), _size(0), _arr(nullptr) {}
+        vector(): _capacity(0), _size(0), _arr(nullptr) {}
 
-    template<typename... Args>
-    explicit vector(const int64_t size, Args&&... args) :
-    _capacity(cap_count(size)),
-    _size(size),
-    _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
-        for (int64_t i = 0; i < _size; ++i) {
-            new (_arr + i) T(args);
+        explicit vector(const int64_t size) :
+        _capacity(cap_count(size)),
+        _size(size),
+        _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
+            for (int64_t i = 0; i < _size; ++i) {
+                new (_arr + i) T();
+            }
         }
-    }
 
-    vector(const vector& v):
-    _capacity(v._capacity),
-    _size(v._size),
-    _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
-        for (int64_t i = 0; i < _size; ++i) {
-            new (_arr + i) T(v._arr[i]);
+        explicit vector(const int64_t size, const T& value) :
+        _capacity(cap_count(size)),
+        _size(size),
+        _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
+            for (int64_t i = 0; i < _size; ++i) {
+                new (_arr + i) T(value);
+            }
         }
-    }
 
-    vector(vector&& v) noexcept :
-    _capacity(v._capacity),
-    _size(v._size),
-    _arr(v._arr) {
-        v._arr = nullptr;
-        v._capacity = 0;
-        v._size = 0;
-    }
-
-    ~vector() {
-        destroy(_arr, _arr + _size);
-        _capacity = 0;
-        _size = 0;
-        free(_arr);
-        _arr = nullptr;
-    }
-
-    void clear() {
-        destroy(_arr, _arr + _size);
-        _size = 0;
-    }
-
-    vector& operator=(const vector& v) {
-        if (this != &v) {
-            destroy(_arr, _arr + _size);
-            free(_arr);
-            _arr = static_cast<T*>(malloc(sizeof(T) * v._capacity));
-            if (_arr == nullptr) {throw mct::bad_alloc();}
-            _capacity = v._capacity;
-            _size = v._size;
+        vector(const vector& v):
+        _capacity(v._capacity),
+        _size(v._size),
+        _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
             for (int64_t i = 0; i < _size; ++i) {
                 new (_arr + i) T(v._arr[i]);
             }
         }
-        return *this;
-    }
 
-    vector& operator=(vector&& v) noexcept {
-        if (this != &v) {
-            destroy(_arr, _arr + _size);
-            _capacity = v._capacity;
-            _size = v._size;
-            _arr = v._arr;
+        vector(vector&& v) noexcept :
+        _capacity(v._capacity),
+        _size(v._size),
+        _arr(v._arr) {
             v._arr = nullptr;
             v._capacity = 0;
             v._size = 0;
         }
-        return *this;
-    }
 
-    iterator begin() { return _arr; }
-    iterator end() { return _arr + _size; }
-    const_iterator begin() const { return _arr; }
-    const_iterator end() const { return _arr + _size; }
-
-    void reserve(const int64_t capacity) {
-        int64_t new_cap = cap_count(capacity);
-        auto tmp = static_cast<T*>(malloc(sizeof(T) * new_cap));
-        if (tmp == nullptr) {throw mct::bad_alloc(new_cap, __func__);}
-        _capacity = new_cap;
-        for (int64_t i = 0; i < _size; ++i) {
-            new (tmp + i) T(mct::move(_arr[i]));
+        ~vector() {
+            destroy(_arr, _arr + _size);
+            _capacity = 0;
+            _size = 0;
+            free(_arr);
+            _arr = nullptr;
         }
-        free(_arr);
-        _arr = tmp;
-    }
 
-    template<typename... Args>
-    void resize(const int64_t size, Args&&... args) {
-        reserve(size);
-        for (int64_t i = _size; i < size; ++i) {
-            new (_arr + i) T(args));
+        void clear() {
+            destroy(_arr, _arr + _size);
+            _size = 0;
         }
-    }
 
-    void push_back(const T& x) {
-        if (_capacity == _size) {
-            reserve(_capacity);
+        vector& operator=(const vector& v) {
+            if (this != &v) {
+                destroy(_arr, _arr + _size);
+                free(_arr);
+                _arr = static_cast<T*>(malloc(sizeof(T) * v._capacity));
+                if (_arr == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
+                _capacity = v._capacity;
+                _size = v._size;
+                for (int64_t i = 0; i < _size; ++i) {
+                    new (_arr + i) T(v._arr[i]);
+                }
+            }
+            return *this;
         }
-        new(_arr[_size]) T(x);
-    }
 
-    void push_back(T&& x) {
-        if (_capacity == _size) {
-            reserve(_capacity);
+        vector& operator=(vector&& v) noexcept {
+            if (this != &v) {
+                destroy(_arr, _arr + _size);
+                _capacity = v._capacity;
+                _size = v._size;
+                _arr = v._arr;
+                v._arr = nullptr;
+                v._capacity = 0;
+                v._size = 0;
+            }
+            return *this;
         }
-        new(_arr[_size]) T(mct::move(x));
-    }
 
-    template<typename... Args>
-    void emplace_back(Args&&... args) {
-        if (_capacity == _size) {
-            reserve(_capacity);
+        iterator<vector, T> begin() { return {_arr, *this}; }
+        iterator<vector, T> end() { return {_arr+_size, *this}; }
+        const_iterator<vector, T> begin() const { return {_arr, *this}; }
+        const_iterator<vector, T> end() const { return {_arr+_size, *this}; }
+
+        void reserve(const int64_t capacity) {
+            int64_t new_cap = cap_count(capacity);
+            auto tmp = static_cast<T*>(malloc(sizeof(T) * new_cap));
+            if (tmp == nullptr) {throw mct::bad_alloc(new_cap, __func__);}
+            _capacity = new_cap;
+            for (int64_t i = 0; i < _size; ++i) {
+                new (tmp + i) T(mct::move(_arr[i]));
+            }
+            free(_arr);
+            _arr = tmp;
         }
-        new(_arr[_size]) T(mct::forward<Args...>(args...));
-    }
 
-};
+        void resize(const int64_t size) {
+            reserve(size);
+            for (int64_t i = _size; i < size; ++i) {
+                new (_arr + i) T();
+            }
+        }
+
+        void resize(const int64_t size, const T& value) {
+            reserve(size);
+            for (int64_t i = _size; i < size; ++i) {
+                new (_arr + i) T(value);
+            }
+        }
+
+        void push_back(const T& x) {
+            if (_capacity == _size) {
+                reserve(_capacity);
+            }
+            new(_arr[_size]) T(x);
+        }
+
+        void push_back(T&& x) {
+            if (_capacity == _size) {
+                reserve(_capacity);
+            }
+            new(_arr[_size]) T(mct::move(x));
+        }
+
+        template<typename... Args>
+        void emplace_back(Args&&... args) {
+            if (_capacity == _size) {
+                reserve(_capacity);
+            }
+            new(_arr[_size]) T(mct::forward<Args...>(args...));
+        }
+
+        void pop_back() {
+            if (_size > 0) {
+                --_size;
+                _arr[_size].~T();
+            }
+        }
+
+        void remove(const int64_t index) {
+            if (index < _size && index >= 0) {
+                _arr[index].~T();
+                for (int64_t i = index; i < _size - 1; ++i) {
+                    new (_arr + i) T(mct::move(_arr[i + 1]));
+                }
+                --_size;
+            }
+            else throw mct::bad_index(_size, index);
+        }
+
+        T& operator[](const int64_t index) {
+            if (index < _size && index >= 0) {
+                return _arr[index];
+            }
+            throw mct::bad_index(_size, index);
+        }
+
+        const T& operator[](const int64_t index) const {
+            if (index < _size && index >= 0) {
+                return _arr[index];
+            }
+            throw mct::bad_index(_size, index);
+        }
+    };
+
+}
 
 #endif //CONTAINERS_VECTOR_H
