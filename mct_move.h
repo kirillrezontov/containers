@@ -9,7 +9,7 @@ namespace mct {
     template<typename T> struct remove_reference { using type = T; };
     template<typename T> struct remove_reference<T&> { using type = T; };
     template<typename T> struct remove_reference<T&&> { using type = T; };
-    template<typename T> using remove_reference_t = typename remove_reference<T>::type;
+    template<typename T> using remove_reference_t = typename mct::remove_reference<T>::type;
 
     template<typename T>
     constexpr remove_reference_t<T> move(T&& t) {
@@ -18,14 +18,14 @@ namespace mct {
 
     template<typename T> struct remove_pointer { using type = T; };
     template<typename T> struct remove_pointer<T*> { using type = T; };
-    template<typename T> using remove_pointer_t = typename remove_pointer<T>::type;
+    template<typename T> using remove_pointer_t = typename mct::remove_pointer<T>::type;
 
     template<typename T>
     T&& declval() noexcept;
 
     template<typename T>
     struct is_lvalue_reference {
-        static constexpr bool value = true;
+        static constexpr bool value = false;
     };
 
     template<typename T>
@@ -34,16 +34,16 @@ namespace mct {
     };
 
     template<typename T>
-    inline constexpr bool is_lvalue_reference_v = is_lvalue_reference<T>::value;
+    inline constexpr bool is_lvalue_reference_v = mct::is_lvalue_reference<T>::value;
 
     template<typename T>
-    constexpr T&& forward(remove_reference_t<T>& t) {
+    constexpr T&& forward(mct::remove_reference_t<T>& t) {
         return static_cast<T&&>(t);
     }
 
     template<typename T>
-    constexpr T&& forward(remove_reference_t<T>&& t) {
-        static_assert(is_lvalue_reference_v<T>);
+    constexpr T&& forward(mct::remove_reference_t<T>&& t) {
+        static_assert(!is_lvalue_reference_v<T>);
         return static_cast<T&&>(t);
     }
 
@@ -58,7 +58,7 @@ namespace mct {
     };
 
     template <typename T>
-    inline constexpr bool is_ptr_v = is_ptr<T>::value;
+    inline constexpr bool is_ptr_v = mct::is_ptr<T>::value;
 
     template <typename T>
     struct is_bool {
@@ -71,7 +71,7 @@ namespace mct {
     };
 
     template <typename T>
-    inline constexpr bool is_bool_v = is_bool<T>::value;
+    inline constexpr bool is_bool_v = mct::is_bool<T>::value;
 
 }
 #endif //CONTAINERS_MOVE_H

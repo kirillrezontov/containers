@@ -96,7 +96,7 @@ namespace mct {
         node** _buckets;
 
         void insert_element(node* new_node) {
-            const int64_t hval = unordered_set_traits<T>::hash(new_node->elem) % _capacity;
+            const int64_t hval = unordered_set_traits<T>::hash(new_node->_elem) % _capacity;
             if (_buckets[hval]) {
                 new_node->next = _buckets[hval]->next;
                 _buckets[hval]->next = new_node;
@@ -106,7 +106,7 @@ namespace mct {
                     _buckets[_before_list_pos] = new_node;
                     new_node->next = _buckets[_before_list_pos];
                 }
-                _buckets[hval] = static_cast<node*>(_before_list);
+                _buckets[hval] = static_cast<node*>(&_before_list);
                 _before_list.next = static_cast<node_base*>(new_node);
                 _before_list_pos = hval;
             }
@@ -114,10 +114,10 @@ namespace mct {
         void rehash(int64_t capacity) {
             if (_buckets) free(_buckets);
             _capacity = capacity;
-            _buckets = static_cast<node**>(calloc(_capacity, sizeof(node)));
+            _buckets = static_cast<node**>(calloc(_capacity, sizeof(node*)));
             if (!_buckets) throw mct::bad_alloc(_capacity*sizeof(node*), __func__);
             _before_list_pos = -1;
-            node* head = _before_list.next, next = nullptr;
+            node* head = _before_list.next,* next = nullptr;
             _before_list.next = nullptr;
             while (head) {
                 next = head->next;

@@ -29,7 +29,7 @@ namespace mct {
 
         int64_t cap_count(int64_t n) const {
             n = n ? n : 2;
-            while (n < _capacity) { n<<= 1; }
+            while (n <= _capacity) { n<<= 1; }
             return n;
         }
 
@@ -49,6 +49,7 @@ namespace mct {
         _capacity(cap_count(size)),
         _size(size),
         _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
+            if (_arr == nullptr) { throw mct::bad_alloc(_capacity, __func__);}
             for (int64_t i = 0; i < _size; ++i) {
                 new (_arr + i) T();
             }
@@ -58,6 +59,7 @@ namespace mct {
         _capacity(cap_count(size)),
         _size(size),
         _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
+            if (_arr == nullptr) { throw mct::bad_alloc(_capacity, __func__);}
             for (int64_t i = 0; i < _size; ++i) {
                 new (_arr + i) T(value);
             }
@@ -67,6 +69,7 @@ namespace mct {
         _capacity(v._capacity),
         _size(v._size),
         _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
+            if (_arr == nullptr) { throw mct::bad_alloc(_capacity, __func__);}
             for (int64_t i = 0; i < _size; ++i) {
                 new (_arr + i) T(v._arr[i]);
             }
@@ -96,10 +99,10 @@ namespace mct {
 
         vector& operator=(const vector& v) {
             if (this != &v) {
-                destroy(_arr, _arr + _size);
-                free(_arr);
-                _arr = static_cast<T*>(malloc(sizeof(T) * v._capacity));
-                if (_arr == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
+                auto tmp = static_cast<T*>(malloc(sizeof(T) * v._capacity));
+                if (tmp == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
+                destroy(_arr, _arr + _size); free(_arr);
+                _arr = tmp;
                 _capacity = v._capacity;
                 _size = v._size;
                 for (int64_t i = 0; i < _size; ++i) {
@@ -111,7 +114,7 @@ namespace mct {
 
         vector& operator=(vector&& v) noexcept {
             if (this != &v) {
-                destroy(_arr, _arr + _size);
+                destroy(_arr, _arr + _size); free(_arr);
                 _capacity = v._capacity;
                 _size = v._size;
                 _arr = v._arr;
@@ -131,7 +134,7 @@ namespace mct {
         const_iterator end() const { return _arr+_size; }
 
         void reserve(const int64_t capacity) {
-            int64_t new_cap = cap_count(capacity);
+            const int64_t new_cap = cap_count(capacity);
             auto tmp = static_cast<T*>(malloc(sizeof(T) * new_cap));
             if (tmp == nullptr) {throw mct::bad_alloc(new_cap, __func__);}
             _capacity = new_cap;
@@ -147,6 +150,7 @@ namespace mct {
             for (int64_t i = _size; i < size; ++i) {
                 new (_arr + i) T();
             }
+            _size = size;
         }
 
         void resize(const int64_t size, const T& value) {
@@ -154,20 +158,21 @@ namespace mct {
             for (int64_t i = _size; i < size; ++i) {
                 new (_arr + i) T(value);
             }
+            _size = size;
         }
 
         void push_back(const T& x) {
             if (_capacity == _size) {
                 reserve(_capacity);
             }
-            new(_arr[_size]) T(x);
+            new(_arr+_size) T(x); ++_size;
         }
 
         void push_back(T&& x) {
             if (_capacity == _size) {
                 reserve(_capacity);
             }
-            new(_arr[_size]) T(mct::move(x));
+            new(_arr+_size) T(mct::move(x)); ++_size;
         }
 
         template<typename... Args>
@@ -175,13 +180,13 @@ namespace mct {
             if (_capacity == _size) {
                 reserve(_capacity);
             }
-            new(_arr[_size]) T(mct::forward<Args...>(args...));
+            new(_arr+_size) T(mct::forward<Args...>(args)...); ++_size;
         }
 
         void pop_back() {
             if (_size > 0) {
-                --_size;
                 _arr[_size].~T();
+                --_size;
             }
         }
 
@@ -191,7 +196,7 @@ namespace mct {
                 for (int64_t i = index; i < _size - 1; ++i) {
                     new (_arr + i) T(mct::move(_arr[i + 1]));
                 }
-                --_size;
+                --_size; _arr[_size].~T();
             }
             else throw mct::bad_index(_size, index);
         }

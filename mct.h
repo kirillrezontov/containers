@@ -5,6 +5,6 @@
 #include "mct_unordered_set.h"
 #include "mct_vector.h"
 #include "mct_move.h"
-#include "mct_algorythm.h"
+#include "mct_algorithm.h"
 
 #endif // CONTAINERS_LIBRARY_H

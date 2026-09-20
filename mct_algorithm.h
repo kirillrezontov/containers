@@ -2,8 +2,8 @@
 // Created by kirillr on 18.09.2026.
 //
 
-#ifndef CONTAINERS_ALGORYTHM_H
-#define CONTAINERS_ALGORYTHM_H
+#ifndef CONTAINERS_ALGORITHM_H
+#define CONTAINERS_ALGORITHM_H
 
 #include "mct_iterator.h"
 
@@ -29,7 +29,7 @@ namespace mct {
 
     template <typename T>
     void swap(T& a, T& b) noexcept {
-        T c = a; a = b; b = c;
+        T c(mct::move(a)); a = move(b); b = move(c);
     }
 
     template <comparable T>
@@ -49,9 +49,9 @@ namespace mct {
     template<typename it, typename comp>
     requires mct::random_access_iterator<it> &&
         comparator<comp, decltype(*mct::declval<it>())>
-    it partition(it begin, it end, const comp& cmp) {
+    it partition(it begin, it end, const comp& cmp) { --end;
         auto pivot = median(*begin, *end, *(begin+(end-begin)/2));
-        it left = begin, right = end-1;
+        it left = begin, right = end;
         while (true) {
             while (cmp(*left, pivot)) { ++left; }
             while (cmp(pivot, *right)) { --right; }
@@ -64,7 +64,7 @@ namespace mct {
         return left;
     }
 
-    template<typename it, typename comp>
+    template<typename it, typename comp = less<decltype(*mct::declval<it>())>>
     requires mct::random_access_iterator<it> &&
         comparator<comp, decltype(*mct::declval<it>())>
     void sort(it begin, it end, const comp& cmp = less<decltype(*mct::declval<it>())>{}) {
@@ -77,6 +77,7 @@ namespace mct {
     template<typename it>
     requires mct::iterator<it>
     void reverse(it begin, it end) {
+        if (begin == end) { return; }
         --end; while (begin != end) {
             swap(*begin, *end);
             ++begin; --end;
@@ -85,4 +86,4 @@ namespace mct {
 
 }
 
-#endif //CONTAINERS_ALGORYTHM_H
+#endif //CONTAINERS_ALGORITHM_H

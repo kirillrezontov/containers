@@ -11,9 +11,9 @@
 namespace mct {
     class exception {
         public:
-        exception();
-        virtual ~exception() = 0;
-        virtual void what() const = 0;
+        exception() = default;
+        virtual ~exception() = default;
+        virtual void what() const {};
     };
 
     class bad_alloc : public exception {
@@ -42,4 +42,4 @@ namespace mct {
 
 }
 
-#endif //CONTAINERS_EXCEPTIONS_H
+#endif //CONTAINERS_EXCEPTION_H
