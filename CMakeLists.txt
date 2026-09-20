@@ -8,6 +8,8 @@ add_library(containers STATIC library.cpp
         exception.h
         library.cpp
         move.h
-        set.h
+        unordered_set.h
         algorythm.h
-        iterator.h)
+        iterator.h
+        string.h
+        flat_set.h)

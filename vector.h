@@ -7,12 +7,22 @@
 #include <cstdlib>
 #include "move.h"
 #include "exception.h"
-#include "iterator.h"
 
 namespace mct {
+    template<typename X, typename Y>
+    struct pair {
+        X x; Y y;
+        bool operator==(const pair& p) const {
+            return x == p.x && y == p.y;
+        }
+        bool operator!=(const pair& p) const {
+            return x != p.x || y != p.y;
+        }
+    };
 
     template<typename T>
     class vector {
+    protected:
         int64_t _capacity;
         int64_t _size;
         T* _arr;
@@ -28,7 +38,6 @@ namespace mct {
                 start->~T(); ++start;
             }
         }
-
     public:
 
         int64_t size() const { return _size; }
@@ -113,10 +122,13 @@ namespace mct {
             return *this;
         }
 
-        iterator<vector, T> begin() { return {_arr, *this}; }
-        iterator<vector, T> end() { return {_arr+_size, *this}; }
-        const_iterator<vector, T> begin() const { return {_arr, *this}; }
-        const_iterator<vector, T> end() const { return {_arr+_size, *this}; }
+        using iterator = T*;
+        using const_iterator = const T*;
+
+        iterator begin() { return _arr; }
+        iterator end() { return _arr+_size; }
+        const_iterator begin() const { return _arr; }
+        const_iterator end() const { return _arr+_size; }
 
         void reserve(const int64_t capacity) {
             int64_t new_cap = cap_count(capacity);

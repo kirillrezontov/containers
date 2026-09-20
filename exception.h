@@ -21,7 +21,7 @@ namespace mct {
         const char* func;
         public:
         bad_alloc(int64_t size, const char* func):sz(size), func(func) {}
-        void what() const override { std::cerr << "bad_alloc " << f << ' ' << sz << std::endl; }
+        void what() const override { std::cerr << "bad_alloc " << func << ' ' << sz << std::endl; }
     };
 
     class bad_index : public exception {
