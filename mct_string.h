@@ -6,8 +6,8 @@
 #define CONTAINERS_STRING_H
 #include <cstring>
 
-#include "vector.h"
-#include "algorythm.h"
+#include "mct_vector.h"
+#include "mct_algorythm.h"
 
 namespace mct {
     class string: public vector<char> {
@@ -37,6 +37,7 @@ namespace mct {
             _arr = static_cast<char*>(calloc(_capacity, sizeof(char)));
             if (_arr == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
             strcpy(_arr, s._arr);
+            return *this;
         }
         string& operator=(string&& s) = default;
         string& operator=(const char* s) {

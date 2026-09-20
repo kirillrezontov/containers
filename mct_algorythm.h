@@ -5,7 +5,7 @@
 #ifndef CONTAINERS_ALGORYTHM_H
 #define CONTAINERS_ALGORYTHM_H
 
-#include "iterator.h"
+#include "mct_iterator.h"
 
 namespace mct {
     template<typename T>

@@ -3,13 +3,13 @@ project(containers)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_library(containers STATIC library.cpp
-        vector.h
-        exception.h
-        library.cpp
-        move.h
-        unordered_set.h
-        algorythm.h
-        iterator.h
-        string.h
-        flat_set.h)
+add_library(containers STATIC mct.cpp
+        mct_vector.h
+        mct_exception.h
+        mct.cpp
+        mct_move.h
+        mct_unordered_set.h
+        mct_algorythm.h
+        mct_iterator.h
+        mct_string.h
+        mct_flat_set.h)

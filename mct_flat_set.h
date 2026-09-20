@@ -4,7 +4,7 @@
 
 #ifndef CONTAINERS_FLAT_SET_H
 #define CONTAINERS_FLAT_SET_H
-#include "vector.h"
+#include "mct_vector.h"
 
 namespace mct {
 

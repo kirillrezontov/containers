@@ -6,7 +6,6 @@
 #define CONTAINERS_UNORDERED_SET_H
 #include <climits>
 #include <cmath>
-#include "vector.h"
 
 namespace mct {
 
@@ -27,6 +26,7 @@ namespace mct {
 
         const auto data2 = reinterpret_cast<const u_char*>(data);
 
+        // ReSharper disable once CppDefaultCaseNotHandledInSwitchStatement
         switch (len & 7) {
             case 7: h ^= static_cast<u_int64_t>(data2[6]) << 48;
             case 6: h ^= static_cast<u_int64_t>(data2[5]) << 40;
@@ -61,7 +61,7 @@ namespace mct {
             return MurmurHash2(reinterpret_cast<const char*>(&y), sizeof(double));
         }
         static constexpr int64_t lookup_num = 3;
-        static constexpr double epsilon = 1/(1<<23);
+        static constexpr double epsilon = 1.0/(1<<23);
         static constexpr double step = 2*epsilon;
         static bool equal(const double& x, const double& y) {
             return fabs(x-y) < epsilon;
@@ -248,4 +248,4 @@ namespace mct {
     };
 } // mcp
 
-#endif //CONTAINERS_SET_H
+#endif //CONTAINERS_UNORDERED_SET_H
