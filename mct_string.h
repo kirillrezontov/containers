@@ -22,28 +22,29 @@ namespace mct {
         string(): vector<char>(1, '\0') {}
         explicit string(const int64_t capacity) {
             _size = 1, _capacity = cap_count(capacity);
-            _arr = static_cast<char*>(calloc(_capacity, sizeof(char)));
+            _arr = static_cast<char*>(malloc(_capacity*sizeof(char)));
             if (_arr == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
+            _arr[0] = '\0';
         }
         string(const int64_t capacity, char c) = delete;
         string(string&& s) noexcept = default;
         string(const string& s) {
             if (s._arr == nullptr) {throw mct::bad_string(__func__);}
             _size = s._size; _capacity = s._capacity;
-            _arr = static_cast<char*>(calloc(_capacity, sizeof(char)));
+            _arr = static_cast<char*>(malloc(_capacity*sizeof(char)));
             if (_arr == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
             strcpy(_arr, s._arr);
         }
         string(const char* s) {
             if (s == nullptr) throw mct::bad_string(__func__);
             _size = strlen(s)+1; _capacity = cap_count(_size);
-            _arr = static_cast<char*>(calloc(_capacity, sizeof(char)));
+            _arr = static_cast<char*>(malloc(_capacity*sizeof(char)));
             if (_arr == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
             strcpy(_arr, s);
         }
         string& operator=(const string& s) {
             if (s._arr == nullptr) {throw mct::bad_string(__func__);}
-            auto tmp = static_cast<char*>(calloc(s._capacity, sizeof(char)));
+            auto tmp = static_cast<char*>(malloc(s._capacity*sizeof(char)));
             if (tmp == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
             free(_arr); _size = s._size; _capacity = s._capacity; _arr = tmp;
             strcpy(_arr, s._arr);
@@ -53,7 +54,7 @@ namespace mct {
         string& operator=(const char* s) {
             if (s == nullptr) throw mct::bad_string(__func__);
             const int64_t size = strlen(s)+1, capacity = cap_count(size);
-            auto tmp = static_cast<char*>(calloc(capacity, sizeof(char)));
+            auto tmp = static_cast<char*>(malloc(capacity*sizeof(char)));
             if (tmp == nullptr) {throw mct::bad_alloc(capacity, __func__);}
             free(_arr); _size = size; _capacity = capacity; _arr = tmp;
             strcpy(_arr, s);
@@ -64,7 +65,7 @@ namespace mct {
 
         void reserve(const int64_t capacity) {
             const int64_t new_cap = cap_count(capacity);
-            const auto tmp = static_cast<char*>(calloc(new_cap, sizeof(char)));
+            const auto tmp = static_cast<char*>(malloc(new_cap*sizeof(char)));
             if (tmp == nullptr) {throw mct::bad_alloc(new_cap, __func__);}
             _capacity = new_cap;
             if (_arr != nullptr) {
@@ -78,12 +79,14 @@ namespace mct {
                 reserve(_capacity);
             }
             _arr[_size-1] = c;
+            _arr[_size] = '\0'; ++_size;
         }
         void push_back(const char& c) {
             if (_capacity == _size+1) {
                 reserve(_capacity);
             }
-            _arr[_size++] = c;
+            _arr[_size-1] = c;
+            _arr[_size] = '\0'; ++_size;
         }
         void pop_back() {
             if (_size > 1) {
