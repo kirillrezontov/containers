@@ -5,6 +5,8 @@
 #ifndef CONTAINERS_VECTOR_H
 #define CONTAINERS_VECTOR_H
 #include <cstdlib>
+
+#include "mct_algorithm.h"
 #include "mct_move.h"
 #include "mct_exception.h"
 
@@ -46,7 +48,7 @@ namespace mct {
         vector(): _capacity(0), _size(0), _arr(nullptr) {}
 
         explicit vector(const int64_t size) :
-        _capacity(cap_count(size)),
+        _capacity(mct::max(static_cast<long long>(size), 1LL)),
         _size(size),
         _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
             if (_arr == nullptr) { throw mct::bad_alloc(_capacity, __func__);}
@@ -56,7 +58,7 @@ namespace mct {
         }
 
         explicit vector(const int64_t size, const T& value) :
-        _capacity(cap_count(size)),
+        _capacity(mct::max(static_cast<long long>(size), 1LL)),
         _size(size),
         _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
             if (_arr == nullptr) { throw mct::bad_alloc(_capacity, __func__);}

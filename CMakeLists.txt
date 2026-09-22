@@ -3,7 +3,7 @@ project(containers)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_library(containers STATIC mct.cpp
+add_executable(containers mct.cpp
         mct.h
         mct_vector.h
         mct_exception.h

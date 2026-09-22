@@ -20,11 +20,8 @@ namespace mct {
     class string: public vector<char> {
         public:
         string(): vector<char>(1, '\0') {}
-        explicit string(const int64_t capacity) {
-            _size = 1, _capacity = cap_count(capacity);
-            _arr = static_cast<char*>(malloc(_capacity*sizeof(char)));
-            if (_arr == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
-            _arr[0] = '\0';
+        explicit string(const int64_t capacity): vector<char>(capacity, '\0') {
+            _size = 1;
         }
         string(const int64_t capacity, char c) = delete;
         string(string&& s) noexcept = default;
@@ -75,15 +72,15 @@ namespace mct {
         }
 
         void push_back(char&& c) {
-            if (_capacity == _size+1) {
-                reserve(_capacity);
+            if (_capacity <= _size+1) {
+                reserve(_capacity<<1);
             }
             _arr[_size-1] = c;
             _arr[_size] = '\0'; ++_size;
         }
         void push_back(const char& c) {
-            if (_capacity == _size+1) {
-                reserve(_capacity);
+            if (_capacity <= _size+1) {
+                reserve(_capacity<<1);
             }
             _arr[_size-1] = c;
             _arr[_size] = '\0'; ++_size;
@@ -178,7 +175,7 @@ namespace mct {
     inline string to_string(int64_t i) {
         char sign = (i < 0) ? 1 : 0;
         i = (i < 0) ? -i : i;
-        string s; do { s.push_back(static_cast<char>('0'+i%10)); } while (i%=10);
+        string s; do { s.push_back(static_cast<char>('0'+i%10)); } while (i/=10);
         if (sign) s.push_back('-');
         mct::reverse(s.begin(), s.end()-1);
         return s;

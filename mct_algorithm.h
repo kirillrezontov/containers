@@ -87,10 +87,10 @@ namespace mct {
     template<typename it>
     requires mct::iterator<it>
     void reverse(it begin, it end) {
-        if (begin == end) { return; }
-        --end; while (begin != end) {
+        while (begin != end) {
+            --end; if (begin == end) break;
             swap(*begin, *end);
-            ++begin; --end;
+            ++begin;
         }
     }
 

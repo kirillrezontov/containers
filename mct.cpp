@@ -4,5 +4,6 @@
 #include "mct_string.h"
 
 int main() {
-    std::cout << mct::to_string(-42) <<std::endl;
+    const auto x = mct::to_string(-42);
+    std::cout << x <<std::endl;
 }
