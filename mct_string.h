@@ -131,11 +131,11 @@ namespace mct {
         }
 
         friend string operator+(const string& s1, const char c) {
-            string s(s1._size); s.push_back(c); return s;
+            string s(s1); s.push_back(c); return s;
         }
 
         friend string operator+(const char c, const string& s2) {
-            string s(s2._size); s._arr[0] = c; strcpy(s._arr+1, s2._arr); return s;
+            string s(s2._size+1); s._arr[0] = c; strcpy(s._arr+1, s2._arr); return s;
         }
 
         string& operator+=(const string& s) {
@@ -168,7 +168,7 @@ namespace mct {
             return strcmp(s1, s2._arr);
         }
         friend string to_string(int64_t i) {
-            char sign = (i < 0) ? -1 : 1;
+            char sign = (i < 0) ? 1 : 0;
             i = (i < 0) ? -i : i;
             string s; do { s.push_back(static_cast<char>('0'+i%10)); } while (i%=10);
             if (sign) s.push_back('-');

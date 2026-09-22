@@ -180,12 +180,12 @@ namespace mct {
             if (_capacity == _size) {
                 reserve(_capacity);
             }
-            new(_arr+_size) T(mct::forward<Args...>(args)...); ++_size;
+            new(_arr+_size) T(mct::forward<Args>(args)...); ++_size;
         }
 
         void pop_back() {
             if (_size > 0) {
-                _arr[_size].~T();
+                _arr[_size-1].~T();
                 --_size;
             }
         }
