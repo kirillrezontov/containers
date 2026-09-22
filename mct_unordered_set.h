@@ -7,6 +7,8 @@
 #include <climits>
 #include <cmath>
 
+#include "mct_algorithm.h"
+
 namespace mct {
 
     inline int64_t MurmurHash2 (const char* key, const u_int64_t len) {
@@ -117,10 +119,10 @@ namespace mct {
             _buckets = static_cast<node**>(calloc(_capacity, sizeof(node*)));
             if (!_buckets) throw mct::bad_alloc(_capacity*sizeof(node*), __func__);
             _before_list_pos = -1;
-            node* head = _before_list.next,* next = nullptr;
+            node* head = static_cast<node*>(_before_list.next),* next = nullptr;
             _before_list.next = nullptr;
             while (head) {
-                next = head->next;
+                next = static_cast<node*>(head->next);
                 insert_element(head);
                 head = next;
             }
@@ -143,19 +145,19 @@ namespace mct {
                 if (_node) { _node = _node->next; }
                 return it;
             }
-            const T& operator*() const { return _node->elem; }
+            const T& operator*() const { return _node->_elem; }
             const T* operator->() const { return &(operator*()); }
         };
         const_iterator begin() const { return const_iterator(_before_list.next); }
         const_iterator end() const { return const_iterator(nullptr); }
-        unordered_set() : _size(0), _capacity(0), _before_list(nullptr), _before_list_pos(-1), _buckets(nullptr) {}
+        unordered_set() : _size(0), _capacity(0), _before_list(), _before_list_pos(-1), _buckets(nullptr) {}
         unordered_set(const unordered_set& other): _size(other._size), _capacity(other._capacity), _before_list_pos(other._before_list_pos) {
             _buckets = static_cast<node**>(calloc(_capacity, sizeof(node*)));
             if (!_buckets) throw mct::bad_alloc(_capacity*sizeof(node*), __func__);
             auto* prev = &_before_list; int64_t prev_pos = -1;
             for (const auto& i : other) {
                 node* nd = new node(i);
-                const auto pos = unordered_set_traits<T>::hash(nd->elem) % _capacity;
+                const auto pos = unordered_set_traits<T>::hash(nd->_elem) % _capacity;
                 prev->next = nd; if (prev_pos != pos) { _buckets[pos] = prev;}
                 prev_pos = pos; prev = nd;
             }
@@ -164,16 +166,28 @@ namespace mct {
         _buckets(other._buckets) {
             other._size = 0; other._capacity = 0; other._before_list.next = nullptr; other._buckets = nullptr; other._before_list_pos = -1;
         }
+        unordered_set& operator=(const unordered_set& other) = delete;
+        unordered_set& operator=(unordered_set&& other) noexcept {
+            ~unordered_set();
+            _before_list = other._before_list;
+            _before_list_pos = other._before_list_pos;
+            _buckets = other._buckets;
+            _capacity = other._capacity;
+            _size = other._size;
+            other._size = 0; other._capacity = 0; other._before_list.next = nullptr; other._before_list_pos = -1; other._buckets = nullptr;
+            return *this;
+        }
+
         bool insert(const T& x) {
             if (contains(x)) return false;
-            if ((_size+1)<<1 >= _capacity) { rehash(rehash_mul*_capacity); }
+            if ((_size+1)<<1 >= _capacity) { rehash(mct::max(rehash_mul*_capacity, 16.0));; }
             node* new_node = new node(x);
             insert_element(new_node); _size++;
             return true;
         }
         bool insert(T&& x) {
             if (contains(x)) return false;
-            if ((_size+1)<<1 >= _capacity) { rehash(rehash_mul*_capacity); }
+            if ((_size+1)<<1 >= _capacity) { rehash(mct::max(rehash_mul*_capacity, 16.0)); }
             node* new_node = new node(move(x));
             insert_element(new_node); _size++;
             return true;
@@ -187,11 +201,12 @@ namespace mct {
             return true;
         }
         bool contains(const T& x) {
+            if (_capacity==0) return false;
             int64_t hvals[unordered_set_traits<T>::lookup_num];
             unordered_set_traits<T>::lookup(x, hvals);
             for (int64_t i = 0; i < unordered_set_traits<T>::lookup_num; ++i) hvals[i]%=_capacity;
             for (int64_t i = 0; i < unordered_set_traits<T>::lookup_num; ++i) {
-                for (node* it = static_cast<node*>(_before_list.next); it; it = it->next) {
+                for (node* it = static_cast<node*>(_buckets+hvals[i]); it; it = static_cast<node*>(it->next)) {
                     if (unordered_set_traits<T>::equal(it->_elem, x)) {return true;}
                     if (unordered_set_traits<T>::hash(it->_elem) != hvals[i]) {break;}
                 }
@@ -199,6 +214,7 @@ namespace mct {
             return false;
         }
         const_iterator find(const T& x) {
+            if (_capacity==0) return end();
             int64_t hvals[unordered_set_traits<T>::lookup_num];
             unordered_set_traits<T>::lookup(x, hvals);
             for (int64_t i = 0; i < unordered_set_traits<T>::lookup_num; ++i) hvals[i]%=_capacity;
@@ -214,10 +230,10 @@ namespace mct {
             auto it = find(x);
             if (it == end()) return false;
             auto nd = it._node;
-            auto this_hval = unordered_set_traits<T>::hash(static_cast<node*>(nd)->elem)%_capacity;
+            auto this_hval = unordered_set_traits<T>::hash(static_cast<node*>(nd)->_elem)%_capacity;
             node* prev = _buckets[this_hval];
             if (nd->next) {
-                auto next_hval = unordered_set_traits<T>::hash(static_cast<node*>(nd->next)->elem)%_capacity;
+                auto next_hval = unordered_set_traits<T>::hash(static_cast<node*>(nd->next)->_elem)%_capacity;
                 _buckets[next_hval] = _buckets[this_hval];
             }
             if (prev->next == nd) {
@@ -231,10 +247,10 @@ namespace mct {
         bool remove(const_iterator& it) {
             if (it == end()) return false;
             auto nd = it._node;
-            auto this_hval = unordered_set_traits<T>::hash(static_cast<node*>(nd)->elem)%_capacity;
+            auto this_hval = unordered_set_traits<T>::hash(static_cast<node*>(nd)->_elem)%_capacity;
             node* prev = _buckets[this_hval];
             if (nd->next) {
-                auto next_hval = unordered_set_traits<T>::hash(static_cast<node*>(nd->next)->elem)%_capacity;
+                auto next_hval = unordered_set_traits<T>::hash(static_cast<node*>(nd->next)->_elem)%_capacity;
                 _buckets[next_hval] = _buckets[this_hval];
             }
             if (prev->next == nd) {
@@ -244,6 +260,14 @@ namespace mct {
             prev->next = nd->next;
             ++it; delete nd;
             return true;
+        }
+        ~unordered_set() {
+            for (node* it = static_cast<node*>(_before_list.next); it; ) {
+                node* d = it; it = it->next;
+                d->_elem.~T();
+                free(d);
+            }
+            free(_buckets);
         }
     };
 } // mcp

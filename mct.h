@@ -1,6 +1,8 @@
 #ifndef CONTAINERS_LIBRARY_H
 #define CONTAINERS_LIBRARY_H
 
+#include "mct_exception.h"
+#include "mct_iterator.h"
 #include "mct_string.h"
 #include "mct_unordered_set.h"
 #include "mct_vector.h"

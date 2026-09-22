@@ -12,4 +12,5 @@ add_library(containers STATIC mct.cpp
         mct_algorithm.h
         mct_iterator.h
         mct_string.h
-        mct_flat_set.h)
+        #mct_flat_set.h
+)

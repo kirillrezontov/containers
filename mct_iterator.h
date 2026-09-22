@@ -39,7 +39,7 @@ namespace mct {
     template <typename T>
     concept random_access_iterator = bidirectional_iterator<T> && requires(T a, T b, int64_t size) {
         a + size; a - size;
-        requires mct::is_lvalue_reference_v<decltype(a[size])>; a + b;
+        requires mct::is_lvalue_reference_v<decltype(a[size])>; a - b;
         a < b; a > b;
     };
 
