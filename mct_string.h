@@ -138,19 +138,21 @@ namespace mct {
         }
 
         friend string operator+(const char c, const string& s2) {
-            string s(s2._size+1); s._arr[0] = c; strcpy(s._arr+1, s2._arr); return s;
+            string s(s2._size+1); s._arr[0] = c; strcpy(s._arr+1, s2._arr); s._size = s2._size + 1; return s;
         }
 
         string& operator+=(const string& s) {
             reserve(_size + s._size - 1);
             strcpy(_arr + _size - 1, s._arr);
+            _size += s._size - 1;
             return *this;
         }
 
         string& operator+=(const char* s) {
             if (s == nullptr) throw mct::bad_string(__func__);
-            reserve(_size + strlen(s));
+            const int64_t s_size = strlen(s); reserve(_size + s_size);
             strcpy(_arr + _size - 1, s);
+            _size += s_size - 1;
             return *this;
         }
 
@@ -170,15 +172,17 @@ namespace mct {
             if (s1 == nullptr) throw mct::bad_string(__func__);
             return strcmp(s1, s2._arr);
         }
-        friend string to_string(int64_t i) {
-            char sign = (i < 0) ? 1 : 0;
-            i = (i < 0) ? -i : i;
-            string s; do { s.push_back(static_cast<char>('0'+i%10)); } while (i%=10);
-            if (sign) s.push_back('-');
-            mct::reverse(s.begin(), s.end()-1);
-            return s;
-        }
+        friend string to_string(int64_t i);
     };
+
+    inline string to_string(int64_t i) {
+        char sign = (i < 0) ? 1 : 0;
+        i = (i < 0) ? -i : i;
+        string s; do { s.push_back(static_cast<char>('0'+i%10)); } while (i%=10);
+        if (sign) s.push_back('-');
+        mct::reverse(s.begin(), s.end()-1);
+        return s;
+    }
 }
 
 #endif //CONTAINERS_STRING_H
