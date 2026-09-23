@@ -60,6 +60,13 @@ namespace mct {
     template <typename T>
     inline constexpr bool is_ptr_v = mct::is_ptr<T>::value;
 
+
+    template<typename T>
+    concept pointer_t = requires(T p)
+    {
+        requires mct::is_ptr<T>::value;
+    };
+
     template <typename T>
     struct is_bool {
         static constexpr bool value = false;
@@ -73,5 +80,34 @@ namespace mct {
     template <typename T>
     inline constexpr bool is_bool_v = mct::is_bool<T>::value;
 
+#define PRIMITIVE(T) template <> struct is_primitive<T> { static constexpr bool value = true;};
+
+    template <typename T>
+    struct is_primitive {
+        static constexpr bool value = false;
+    };
+    PRIMITIVE(int);
+    PRIMITIVE(unsigned int);
+    PRIMITIVE(long long);
+    PRIMITIVE(unsigned long long);
+    PRIMITIVE(float);
+    PRIMITIVE(double);
+    PRIMITIVE(long double);
+    PRIMITIVE(bool);
+    PRIMITIVE(char);
+    PRIMITIVE(unsigned char);
+    PRIMITIVE(short);
+    PRIMITIVE(unsigned short);
+    PRIMITIVE(long);
+    PRIMITIVE(unsigned long);
+
+    template<typename T>
+    inline constexpr bool is_primitive_v = mct::is_primitive<T>::value;
+
+    template<typename T>
+    concept primitive_t = requires(T t)
+    {
+        requires mct::is_primitive_v<T>;
+    };
 }
 #endif //CONTAINERS_MOVE_H

@@ -29,10 +29,50 @@ namespace mct {
         int64_t _size;
         T* _arr;
 
-        int64_t cap_count(int64_t n) const {
-            n = n ? n : 2;
-            while (n <= _capacity) { n<<= 1; }
-            return n;
+        int64_t cap_count(int64_t new_cap, const int64_t old_cap) const {
+            new_cap = new_cap ? new_cap : 2;
+            while (new_cap <= old_cap) { new_cap<<= 1; }
+            return new_cap;
+        }
+
+        static void create(T* start, T* end) {
+            while (start < end) {
+                new (start) T(); ++start;
+            }
+        }
+
+        template<pointer_t P>
+        static void create(P* start, P* end) {
+            while (start < end) {
+                *start = nullptr;
+            }
+        }
+
+        template<primitive_t P>
+        static void create(P* start, P* end) {
+            while (start < end) {
+                *start = 0;
+            }
+        }
+
+        static void create(T* start, T* end, const T& value) {
+            while (start < end) {
+                new (start) T(value); ++start;
+            }
+        }
+
+
+        template<pointer_t P>
+        static void create(P* start, P* end, const P& value) {
+            while (start < end) {
+                *start = value;
+            }
+        }
+
+        static void copy(T* start1, T* end1, T* start2, T* end2) {
+            while (start1 < end1 && start2 < end2) {
+                new (start1) T(*start2); ++start1; ++start2;
+            }
         }
 
         static void destroy(T* start, T* end) {
@@ -48,23 +88,19 @@ namespace mct {
         vector(): _capacity(0), _size(0), _arr(nullptr) {}
 
         explicit vector(const int64_t size) :
-        _capacity(mct::max(static_cast<long long>(size), 1LL)),
+        _capacity(cap_count(size, 0)),
         _size(size),
         _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
             if (_arr == nullptr) { throw mct::bad_alloc(_capacity, __func__);}
-            for (int64_t i = 0; i < _size; ++i) {
-                new (_arr + i) T();
-            }
+            create(_arr, _arr+_size);
         }
 
         explicit vector(const int64_t size, const T& value) :
-        _capacity(mct::max(static_cast<long long>(size), 1LL)),
+        _capacity(cap_count(size, 0)),
         _size(size),
         _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
             if (_arr == nullptr) { throw mct::bad_alloc(_capacity, __func__);}
-            for (int64_t i = 0; i < _size; ++i) {
-                new (_arr + i) T(value);
-            }
+            create(_arr, _arr+_size, value);
         }
 
         vector(const vector& v):
@@ -72,9 +108,7 @@ namespace mct {
         _size(v._size),
         _arr(static_cast<T*>(malloc(sizeof(T) * _capacity))) {
             if (_arr == nullptr) { throw mct::bad_alloc(_capacity, __func__);}
-            for (int64_t i = 0; i < _size; ++i) {
-                new (_arr + i) T(v._arr[i]);
-            }
+            copy(_arr, _arr+_size, v._arr, v._arr+v._size);
         }
 
         vector(vector&& v) noexcept :

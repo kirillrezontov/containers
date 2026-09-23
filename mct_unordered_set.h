@@ -140,19 +140,21 @@ namespace mct {
             explicit const_iterator(const node* node) : _node(node) {}
             const_iterator(const const_iterator& it) : _node(it._node) {}
             const_iterator& operator++() {
-                if (_node) { _node = _node->next; }
+                if (_node) { _node = static_cast<node*>(_node->next); }
                 return *this;
             }
             const_iterator operator++(int) {
                 const_iterator it(_node);
-                if (_node) { _node = _node->next; }
+                if (_node) { _node = static_cast<node*>(_node->next); }
                 return it;
             }
+            bool operator==(const const_iterator &other) const { return _node == other._node; }
+            bool operator!=(const const_iterator &other) const { return _node != other._node; }
             const T& operator*() const { return _node->_elem; }
             const T* operator->() const { return &(operator*()); }
         };
-        const_iterator begin() const { return const_iterator(_before_list.next); }
-        const_iterator end() const { return const_iterator(nullptr); }
+        const_iterator begin() const { return const_iterator(static_cast<node*>(_before_list.next)); }
+        const_iterator end() const { return const_iterator(static_cast<node*>(nullptr)); }
         unordered_set() : _size(0), _capacity(0), _before_list(), _before_list_pos(-1), _buckets(nullptr) {}
         unordered_set(const unordered_set& other): _size(other._size), _capacity(other._capacity), _before_list_pos(other._before_list_pos) {
             _buckets = static_cast<node**>(calloc(_capacity, sizeof(node*)));
