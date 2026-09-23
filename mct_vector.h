@@ -11,6 +11,101 @@
 #include "mct_exception.h"
 
 namespace mct {
+    template<class P>
+        static void create(P* start, P* end) {
+        while (start < end) {
+            new (start) P(); ++start;
+        }
+    }
+
+    template<pointer_t P>
+    static void create(P* start, P* end) {
+        while (start < end) {
+            *start = nullptr;
+        }
+    }
+
+    template<primitive_t P>
+    static void create(P* start, P* end) {
+        while (start < end) {
+            *start = 0;
+        }
+    }
+
+    template<class P>
+        static void create(P* start, P* end, const P& value) {
+        while (start < end) {
+            new (start) P(value); ++start;
+        }
+    }
+
+    template<pointer_t P>
+    static void create(P* start, P* end, const P& value) {
+        while (start < end) {
+            *start = value;
+        }
+    }
+
+    template<primitive_t P>
+    static void create(P* start, P* end, const P& value) {
+        while (start < end) {
+            *start = value;
+        }
+    }
+
+    template<class P>
+        static void copy(P* start1, P* end1, P* start2, P* end2) {
+        while (start1 < end1 && start2 < end2) {
+            new (start1) P(*start2); ++start1; ++start2;
+        }
+    }
+
+    template<pointer_t P>
+    static void copy(P* start1, P* end1, P* start2, P* end2) {
+        while (start1 < end1 && start2 < end2) {
+            *start1 = *start2; ++start1; ++start2;
+        }
+    }
+
+    template<primitive_t P>
+    static void copy(P* start1, P* end1, P* start2, P* end2) {
+        while (start1 < end1 && start2 < end2) {
+            *start1 = *start2; ++start1; ++start2;
+        }
+    }
+
+    template<class P>
+    static void move(P* start1, P* end1, P* start2, P* end2) {
+        while (start1 < end1 && start2 < end2) {
+            *start1 = mct::move(*start2); ++start1; ++start2;
+        }
+    }
+
+    template<pointer_t P>
+    static void move(P* start1, P* end1, P* start2, P* end2) {
+        while (start1 < end1 && start2 < end2) {
+            *start1 = *start2; ++start1; ++start2;
+        }
+    }
+
+    template<primitive_t P>
+    static void move(P* start1, P* end1, P* start2, P* end2) {
+        while (start1 < end1 && start2 < end2) {
+            *start1 = *start2; ++start1; ++start2;
+        }
+    }
+
+    template<class P>
+    static void destroy(P* start, P* end) {
+        while (start < end) {
+            start->~T(); ++start;
+        }
+    }
+    template<pointer_t P>
+    static void destroy(P* start, P* end) {}
+    template<primitive_t P>
+    static void destroy(P* start, P* end) {}
+
     template<typename X, typename Y>
     struct pair {
         X x; Y y;
@@ -33,52 +128,6 @@ namespace mct {
             new_cap = new_cap ? new_cap : 2;
             while (new_cap <= old_cap) { new_cap<<= 1; }
             return new_cap;
-        }
-
-        static void create(T* start, T* end) {
-            while (start < end) {
-                new (start) T(); ++start;
-            }
-        }
-
-        template<pointer_t P>
-        static void create(P* start, P* end) {
-            while (start < end) {
-                *start = nullptr;
-            }
-        }
-
-        template<primitive_t P>
-        static void create(P* start, P* end) {
-            while (start < end) {
-                *start = 0;
-            }
-        }
-
-        static void create(T* start, T* end, const T& value) {
-            while (start < end) {
-                new (start) T(value); ++start;
-            }
-        }
-
-
-        template<pointer_t P>
-        static void create(P* start, P* end, const P& value) {
-            while (start < end) {
-                *start = value;
-            }
-        }
-
-        static void copy(T* start1, T* end1, T* start2, T* end2) {
-            while (start1 < end1 && start2 < end2) {
-                new (start1) T(*start2); ++start1; ++start2;
-            }
-        }
-
-        static void destroy(T* start, T* end) {
-            while (start < end) {
-                start->~T(); ++start;
-            }
         }
     public:
 
@@ -137,13 +186,10 @@ namespace mct {
             if (this != &v) {
                 auto tmp = static_cast<T*>(malloc(sizeof(T) * v._capacity));
                 if (tmp == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
-                destroy(_arr, _arr + _size); free(_arr);
-                _arr = tmp;
+                destroy(_arr, _arr + _size); free(_arr); _arr = tmp;
+                copy(_arr, _arr+_size, v._arr, v._arr+v._size);
                 _capacity = v._capacity;
                 _size = v._size;
-                for (int64_t i = 0; i < _size; ++i) {
-                    new (_arr + i) T(v._arr[i]);
-                }
             }
             return *this;
         }
@@ -174,26 +220,19 @@ namespace mct {
             auto tmp = static_cast<T*>(malloc(sizeof(T) * new_cap));
             if (tmp == nullptr) {throw mct::bad_alloc(new_cap, __func__);}
             _capacity = new_cap;
-            for (int64_t i = 0; i < _size; ++i) {
-                new (tmp + i) T(mct::move(_arr[i]));
-            }
-            free(_arr);
+            move(tmp, tmp+_size, _arr, _arr+_size); free(_arr);
             _arr = tmp;
         }
 
         void resize(const int64_t size) {
             reserve(size);
-            for (int64_t i = _size; i < size; ++i) {
-                new (_arr + i) T();
-            }
+            create(_arr+_size, _arr+size);
             _size = size;
         }
 
         void resize(const int64_t size, const T& value) {
             reserve(size);
-            for (int64_t i = _size; i < size; ++i) {
-                new (_arr + i) T(value);
-            }
+            create(_arr+_size, _arr+size, value);
             _size = size;
         }
 
@@ -229,9 +268,7 @@ namespace mct {
         void remove(const int64_t index) {
             if (index < _size && index >= 0) {
                 _arr[index].~T();
-                for (int64_t i = index; i < _size - 1; ++i) {
-                    new (_arr + i) T(mct::move(_arr[i + 1]));
-                }
+                move(_arr+index, _arr+_size-1, _arr+index+1, _arr+_size);
                 --_size; _arr[_size].~T();
             }
             else throw mct::bad_index(_size, index);
@@ -251,7 +288,6 @@ namespace mct {
             throw mct::bad_index(_size, index);
         }
     };
-
 }
 
 #endif //CONTAINERS_VECTOR_H
