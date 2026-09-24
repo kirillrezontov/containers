@@ -19,85 +19,41 @@ namespace mct {
 
     class string: public vector<char> {
         public:
-        string(): vector<char>(1, '\0') {}
-        explicit string(const int64_t capacity): vector<char>(capacity, '\0') {
-            _size = 1;
-        }
-        string(const int64_t capacity, char c) = delete;
-        string(string&& s) noexcept = default;
-        string(const string& s) {
-            if (s._arr == nullptr) {throw mct::bad_string(__func__);}
-            _size = s._size; _capacity = s._capacity;
-            _arr = static_cast<char*>(malloc(_capacity*sizeof(char)));
-            if (_arr == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
-            strcpy(_arr, s._arr);
-        }
-        string(const char* s) {
+        string(): vector(1) {}
+        string(const string& s) = default;
+        explicit string(const char* s) {
             if (s == nullptr) throw mct::bad_string(__func__);
-            _size = strlen(s)+1; _capacity = cap_count(_size);
-            _arr = static_cast<char*>(malloc(_capacity*sizeof(char)));
-            if (_arr == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
-            strcpy(_arr, s);
+            const int64_t s_size = strlen(s);
+            reserve(s_size+1); strcpy(_arr, s);
+            _size = s_size+1;
         }
-        string& operator=(const string& s) {
-            if (s._arr == nullptr) {throw mct::bad_string(__func__);}
-            auto tmp = static_cast<char*>(malloc(s._capacity*sizeof(char)));
-            if (tmp == nullptr) {throw mct::bad_alloc(_capacity, __func__);}
-            free(_arr); _size = s._size; _capacity = s._capacity; _arr = tmp;
-            strcpy(_arr, s._arr);
-            return *this;
+        explicit string(const char c): vector(2) {
+            _arr[0] = c;
         }
-        string& operator=(string&& s) = default;
+        string& operator=(const string& s) = default;
         string& operator=(const char* s) {
             if (s == nullptr) throw mct::bad_string(__func__);
-            const int64_t size = strlen(s)+1, capacity = cap_count(size);
-            auto tmp = static_cast<char*>(malloc(capacity*sizeof(char)));
-            if (tmp == nullptr) {throw mct::bad_alloc(capacity, __func__);}
-            free(_arr); _size = size; _capacity = capacity; _arr = tmp;
-            strcpy(_arr, s);
+            const int64_t s_size = strlen(s);
+            reserve(s_size+1); strcpy(_arr, s);
+            _size = s_size+1;
             return *this;
         }
-        ~string() = default;
-        int64_t len() const { return _size-1; }
-
-        void reserve(const int64_t capacity) {
-            const int64_t new_cap = cap_count(capacity);
-            const auto tmp = static_cast<char*>(malloc(new_cap*sizeof(char)));
-            if (tmp == nullptr) {throw mct::bad_alloc(new_cap, __func__);}
-            _capacity = new_cap;
-            if (_arr != nullptr) {
-                strcpy(tmp, _arr); free(_arr);
-            }
-            _arr = tmp;
+        string& operator=(const char c) {
+            resize(2);
+            _arr[0] = c; _arr[1] = '\0';
+            return *this;
         }
-
-        void push_back(char&& c) {
-            if (_capacity <= _size+1) {
-                reserve(_capacity<<1);
-            }
-            _arr[_size-1] = c;
-            _arr[_size] = '\0'; ++_size;
+        void push_back(const char c) {
+            reserve(_capacity);
+            _arr[_size-1] = c; _arr[_size] = '\0'; ++_size;
         }
-        void push_back(const char& c) {
-            if (_capacity <= _size+1) {
-                reserve(_capacity<<1);
-            }
-            _arr[_size-1] = c;
-            _arr[_size] = '\0'; ++_size;
-        }
-        void pop_back() {
-            if (_size > 1) {
-                --_size; _arr[_size-1] = '\0';
-            }
-        }
-
         const char* c_str() const { return _arr; }
         friend std::ostream& operator<<(std::ostream& os, const string& s) { os << s._arr; return os; }
         friend std::istream& operator>>(std::istream& is, string& s) {
             char c; is >> std::ws;
             while ( is >> c ) {
                 switch ( c ) {
-                    case '\n': case '\r': case '\t': case ' ': case '\0': break;
+                    case '\n': case '\r': case '\t': case ' ': case '\0': s.push_back('\n'); break;
                     default: s.push_back(c);
                 }
             }
@@ -173,7 +129,7 @@ namespace mct {
     };
 
     inline string to_string(int64_t i) {
-        char sign = (i < 0) ? 1 : 0;
+        const char sign = (i < 0) ? 1 : 0;
         i = (i < 0) ? -i : i;
         string s; do { s.push_back(static_cast<char>('0'+i%10)); } while (i/=10);
         if (sign) s.push_back('-');
