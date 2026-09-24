@@ -26,15 +26,14 @@ namespace mct {
 
         const auto data2 = reinterpret_cast<const u_char*>(data);
 
-        // ReSharper disable once CppDefaultCaseNotHandledInSwitchStatement
         switch (len & 7) {
-            case 7: h ^= static_cast<u_int64_t>(data2[6]) << 48;
-            case 6: h ^= static_cast<u_int64_t>(data2[5]) << 40;
-            case 5: h ^= static_cast<u_int64_t>(data2[4]) << 32;
-            case 4: h ^= static_cast<u_int64_t>(data2[3]) << 24;
-            case 3: h ^= static_cast<u_int64_t>(data2[2]) << 16;
-            case 2: h ^= static_cast<u_int64_t>(data2[1]) << 8;
-            case 1: h ^= static_cast<u_int64_t>(data2[0]); h *= m;
+            case 7: h ^= static_cast<u_int64_t>(data2[6]) << 48;    [[fallthrough]];
+            case 6: h ^= static_cast<u_int64_t>(data2[5]) << 40;    [[fallthrough]];
+            case 5: h ^= static_cast<u_int64_t>(data2[4]) << 32;    [[fallthrough]];
+            case 4: h ^= static_cast<u_int64_t>(data2[3]) << 24;    [[fallthrough]];
+            case 3: h ^= static_cast<u_int64_t>(data2[2]) << 16;    [[fallthrough]];
+            case 2: h ^= static_cast<u_int64_t>(data2[1]) << 8;     [[fallthrough]];
+            case 1: h ^= static_cast<u_int64_t>(data2[0]); h *= m;  [[fallthrough]];
             default: break;
         };
         h ^= h >> r; h *= m; h ^= h >> r;

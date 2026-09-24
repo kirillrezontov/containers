@@ -19,7 +19,7 @@ namespace mct {
 
     class string: public vector<char> {
         public:
-        string(): vector(1) {}
+        explicit string(): vector(1) {}
         string(const string& s) = default;
         explicit string(const char* s) {
             if (s == nullptr) throw mct::bad_string(__func__);

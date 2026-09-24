@@ -39,7 +39,7 @@ namespace mct {
 
     template <typename T>
     void swap(T& a, T& b) noexcept {
-        T c(mct::move(a)); a = move(b); b = move(c);
+        T c(mct::move(a)); a = mct::move(b); b = mct::move(c);
     }
 
     template <comparable T>
