@@ -157,6 +157,7 @@ namespace mct {
             while (new_cap <= old_cap) { new_cap<<= 1; }
             return new_cap;
         }
+
     public:
 
         [[nodiscard]] int64_t size() const { return _size; }
