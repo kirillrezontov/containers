@@ -258,39 +258,47 @@ namespace mct {
             }
             return end();
         }
-        bool remove(const T& x) {
+        bool erase(const T& x) {
             auto it = find(x);
             if (it == end()) return false;
             auto nd = it._node;
             auto this_hval = nd->_hval%_capacity;
             node* prev = _buckets[this_hval];
-            if (prev->next == nd) _buckets[this_hval] = nullptr;
-            while (prev->next != nd) { prev = prev->next; }
-            if (nd->next) {
-                auto next_hval = nd->next->_hval%_capacity;
-                if (next_hval != this_hval) {
-                    _buckets[next_hval] = prev;
+            bool is_last = (!nd->next) || (this_hval%_capacity != nd->next->_hval%_capacity);
+            if (prev->next == nd && is_last) {
+                _buckets[this_hval] = nullptr;
+                if (this_hval == _before_list_pos) {
+                    _before_list_pos = (nd->next) ? nd->next->_hval%_capacity : -1;
                 }
+            }
+            while (prev->next != nd) {prev = prev->next;}
+            if (is_last && nd->next) {
+                _buckets[nd->next->_hval%_capacity] = prev;
             }
             prev->next = nd->next;
             delete nd;
+            --_size;
             return true;
         }
-        bool remove(const_iterator& it) {
+        bool erase(const const_iterator& it) {
             if (it == end()) return false;
             auto nd = it._node;
             auto this_hval = nd->_hval%_capacity;
             node* prev = _buckets[this_hval];
-            if (prev->next == nd) _buckets[this_hval] = nullptr;
-            while (prev->next != nd) { prev = prev->next; }
-            if (nd->next) {
-                auto next_hval = nd->next->_hval%_capacity;
-                if (next_hval != this_hval) {
-                    _buckets[next_hval] = prev;
+            bool is_last = (!nd->next) || (this_hval%_capacity != nd->next->_hval%_capacity);
+            if (prev->next == nd && is_last) {
+                _buckets[this_hval] = nullptr;
+                if (this_hval == _before_list_pos) {
+                    _before_list_pos = (nd->next) ? nd->next->_hval%_capacity : -1;
                 }
+            }
+            while (prev->next != nd) {prev = prev->next;}
+            if (is_last && nd->next) {
+                _buckets[nd->next->_hval%_capacity] = prev;
             }
             prev->next = nd->next;
             delete nd;
+            --_size;
             return true;
         }
         ~unordered_set() {
