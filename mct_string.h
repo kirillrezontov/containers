@@ -109,7 +109,7 @@ namespace mct {
             return *this;
         }
 
-        string& operator+=(char c) {
+        string& operator+=(const char c) {
             push_back(c);
             return *this;
         }

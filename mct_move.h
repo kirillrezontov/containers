@@ -109,5 +109,18 @@ namespace mct {
     {
         requires mct::is_primitive_v<T>;
     };
+
+    template<typename T, typename P>
+    struct is_same {
+        static constexpr bool value = false;
+    };
+
+    template <typename T>
+    struct is_same<T, T> {
+        static constexpr bool value = true;
+    };
+
+    template <typename T, typename P>
+    inline constexpr bool is_same_v = mct::is_same<T, P>::value;
 }
 #endif //CONTAINERS_MOVE_H

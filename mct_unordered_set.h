@@ -83,12 +83,12 @@ namespace mct {
         struct node;
         struct node_base{ node* next = nullptr; };
         struct node: node_base {
-            T _elem;
+            int64_t _hval; T _elem;
             template<typename ...Args>
-            explicit node(Args ...args) : _elem(mct::forward<Args...>(args)...) {}
-            node(const node& other) : _elem(other._elem) {}
-            explicit node(const T& elem) : _elem(elem) {}
-            explicit node(T&& elem) : _elem(move(elem)) {}
+            explicit node(Args ...args) : _elem(mct::forward<Args...>(args)...) { _hval = unordered_set_traits<T>::hash(_elem); }
+            node(const node& other) :_hval(other._hval), _elem(other._elem) {}
+            explicit node(const T& elem) : _elem(elem) { _hval = unordered_set_traits<T>::hash(_elem); }
+            explicit node(T&& elem) : _elem(move(elem)) { _hval = unordered_set_traits<T>::hash(_elem); }
             ~node() { _elem.~T(); }
         };
         node_base _before_list;
@@ -96,15 +96,15 @@ namespace mct {
         node** _buckets;
 
         void insert_element(node* new_node) {
-            const int64_t hval = unordered_set_traits<T>::hash(new_node->_elem)%_capacity;
+            const int64_t hval = new_node->_hval%_capacity;
             if (_buckets[hval]) {
                 new_node->next = _buckets[hval]->next;
                 _buckets[hval]->next = new_node;
             }
             else {
                 if (_before_list_pos >= 0) {
+                    new_node->next = _buckets[_before_list_pos]->next;
                     _buckets[_before_list_pos] = new_node;
-                    new_node->next = _buckets[_before_list_pos];
                 }
                 _buckets[hval] = static_cast<node*>(&_before_list);
                 _before_list.next = new_node;
@@ -123,6 +123,7 @@ namespace mct {
             _before_list.next = nullptr;
             while (head) {
                 next = head->next;
+                head->next = nullptr;
                 insert_element(head);
                 head = next;
             }
@@ -226,7 +227,8 @@ namespace mct {
             unordered_set_traits<T>::lookup(x, hvals);
             for (int64_t i = 0; i < unordered_set_traits<T>::lookup_num; ++i) hvals[i]%=_capacity;
             for (int64_t i = 0; i < unordered_set_traits<T>::lookup_num; ++i) {
-                for (node* it = _buckets[hvals[i]]; it; it = it->next) {
+                if (_buckets[hvals[i]]==nullptr) continue;
+                for (node* it = _buckets[hvals[i]]->next; it; it = it->next) {
                     if (unordered_set_traits<T>::equal(it->_elem, x)) {return true;}
                     if (unordered_set_traits<T>::hash(it->_elem) != hvals[i]) {break;}
                 }
@@ -239,7 +241,8 @@ namespace mct {
             unordered_set_traits<T>::lookup(x, hvals);
             for (int64_t i = 0; i < unordered_set_traits<T>::lookup_num; ++i) hvals[i]%=_capacity;
             for (int64_t i = 0; i < unordered_set_traits<T>::lookup_num; ++i) {
-                for (auto it = const_iterator(_buckets[hvals[i]]); it!=end(); ++it) {
+                if (_buckets[hvals[i]]==nullptr) continue;
+                for (auto it = const_iterator(_buckets[hvals[i]]->next); it!=end(); ++it) {
                     if (unordered_set_traits<T>::equal(*it, x)) {return it;}
                     if (unordered_set_traits<T>::hash(*it) != hvals[i]) {break;}
                 }

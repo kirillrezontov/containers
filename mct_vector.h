@@ -8,6 +8,7 @@
 
 #include "mct_move.h"
 #include "mct_exception.h"
+#include "mct_iterator.h"
 
 namespace mct {
     template<class P>
@@ -20,14 +21,14 @@ namespace mct {
     template<pointer_t P>
     static void create(P* start, P* end) {
         while (start < end) {
-            *start = nullptr;
+            *start = nullptr; ++start;
         }
     }
 
     template<primitive_t P>
     static void create(P* start, P* end) {
         while (start < end) {
-            *start = 0;
+            *start = 0; ++start;
         }
     }
 
@@ -41,14 +42,14 @@ namespace mct {
     template<pointer_t P>
     static void create(P* start, P* end, const P& value) {
         while (start < end) {
-            *start = value;
+            *start = value; ++start;
         }
     }
 
     template<primitive_t P>
     static void create(P* start, P* end, const P& value) {
         while (start < end) {
-            *start = value;
+            *start = value; ++start;
         }
     }
 
@@ -196,6 +197,15 @@ namespace mct {
             v._arr = nullptr;
             v._capacity = 0;
             v._size = 0;
+        }
+
+        template<typename I>
+        requires iterator<I> && requires(I it)
+        {
+            requires is_same_v<decltype(*it), T&> || is_same_v<decltype(*it), const T&>;
+        }
+        vector(I begin, I end): vector() {
+            while (begin!=end) push_back(*begin++);
         }
 
         ~vector() {

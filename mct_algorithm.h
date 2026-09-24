@@ -60,6 +60,7 @@ namespace mct {
     requires mct::random_access_iterator<it> &&
         comparator<comp, decltype(*mct::declval<it>())>
     it partition(it begin, it end, const comp& cmp) { --end;
+        if (begin == end) { return begin; }
         auto pivot = median(*begin, *end, *(begin+(end-begin)/2));
         it left = begin, right = end;
         while (true) {
@@ -78,7 +79,7 @@ namespace mct {
     requires mct::random_access_iterator<it> &&
         comparator<comp, decltype(*mct::declval<it>())>
     void sort(it begin, it end, const comp& cmp = less<decltype(*mct::declval<it>())>{}) {
-        if (end <= begin) { return; }
+        if (end - begin <= 1) { return; }
         it p = partition(begin, end, cmp);
         sort(begin, p+1, cmp);
         sort(p+1, end, cmp);
