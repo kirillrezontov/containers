@@ -19,6 +19,8 @@ namespace mct {
 
     class string: public vector<char> {
         public:
+        [[nodiscard]] int64_t size() const { return _size-1; }
+        [[nodiscard]] int64_t len() const { return _size-1; }
         explicit string(): vector(1) {}
         string(const string& s) = default;
         explicit string(const char* s) {
@@ -47,7 +49,7 @@ namespace mct {
             reserve(_size+1);
             _arr[_size-1] = c; _arr[_size] = '\0'; ++_size;
         }
-        const char* c_str() const { return _arr; }
+        [[nodiscard]] const char* c_str() const { return _arr; }
         friend std::ostream& operator<<(std::ostream& os, const string& s) { os << s._arr; return os; }
         friend std::istream& operator>>(std::istream& is, string& s) {
             char c; is >> std::ws;
@@ -96,7 +98,7 @@ namespace mct {
 
         string& operator+=(const string& s) {
             reserve(_size + s._size - 1);
-            memmove(_arr+_size, s._arr, s._size);
+            memmove(_arr+_size-1, s._arr, s._size);
             _size += s._size - 1;
             return *this;
         }
@@ -104,7 +106,7 @@ namespace mct {
         string& operator+=(const char* s) {
             if (s == nullptr) throw mct::bad_string(__func__);
             const int64_t s_size = strlen(s); reserve(_size + s_size);
-            memmove(_arr+_size, s, s_size+1);
+            memmove(_arr+_size-1, s, s_size+1);
             _size += s_size;
             return *this;
         }
