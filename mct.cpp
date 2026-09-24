@@ -1,7 +1,6 @@
 //
 // Created by kirillr on 18.09.2026.
 //
-#include <algorithm>
 
 #include "mct_string.h"
 #include "mct_unordered_set.h"
