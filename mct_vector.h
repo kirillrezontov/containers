@@ -161,8 +161,11 @@ namespace mct {
 
     public:
 
+        [[nodiscard]] bool operator==(const vector& v) const { return _arr == v._arr; }
+
         [[nodiscard]] int64_t size() const { return _size; }
         [[nodiscard]] int64_t capacity() const { return _capacity; }
+        [[nodiscard]] bool empty() const { return _size == 0; }
 
         vector(): _capacity(0), _size(0), _arr(nullptr) {}
 
