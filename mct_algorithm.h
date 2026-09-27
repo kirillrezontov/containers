@@ -5,6 +5,8 @@
 #ifndef CONTAINERS_ALGORITHM_H
 #define CONTAINERS_ALGORITHM_H
 
+#include <random>
+
 #include "mct_iterator.h"
 
 namespace mct {
@@ -107,6 +109,11 @@ namespace mct {
         }
     }
 
+    inline int thread_local_rand() {
+        thread_local std::mt19937 generator(std::random_device{}());
+        std::uniform_int_distribution distribution(INT32_MIN, INT32_MAX);
+        return distribution(generator);
+    }
 }
 
 #endif //CONTAINERS_ALGORITHM_H
