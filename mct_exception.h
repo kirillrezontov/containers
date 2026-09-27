@@ -13,7 +13,7 @@ namespace mct {
         public:
         exception() = default;
         virtual ~exception() = default;
-        virtual void what() const {};
+        virtual void what() const {std::cerr << "exception" << std::endl; };
     };
 
     class bad_alloc : public exception {
