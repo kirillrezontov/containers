@@ -31,6 +31,18 @@ namespace mct {
         return (a < b) ? a : b;
     }
 
+    template <comparable T>
+    bool maxs(T& a, const T& b) {
+        if (a < b) {a = b; return true;}
+        return false;
+    }
+
+    template <comparable T>
+    bool mins(T& a, const T& b) {
+        if (a > b) {a = b; return true;}
+        return false;
+    }
+
     template <typename T, typename C>
     concept comparator = requires(T comp, C a, C b)
     {

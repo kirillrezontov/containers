@@ -257,6 +257,11 @@ namespace mct {
         const_iterator begin() const { return _arr; }
         const_iterator end() const { return _arr+_size; }
 
+        T& front() { return *_arr; }
+        const T& front() const { return *_arr; }
+        T& back() { return *(_arr+_size-1); }
+        const T& back() const { return *(_arr+_size-1); }
+
         void reserve(const int64_t capacity) {
             const int64_t new_cap = cap_count(capacity, _capacity);
             auto tmp = static_cast<T*>(malloc(sizeof(T) * new_cap));
