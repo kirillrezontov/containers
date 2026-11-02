@@ -301,6 +301,20 @@ namespace mct {
             --_size;
             return true;
         }
+        void clear() {
+            if (_capacity==0) return;
+            node* d = nullptr;
+            for (node* it = _before_list.next; it; ) {
+                d = it; it = it->next;
+                delete d;
+            }
+            free(_buckets);
+            _buckets = nullptr;
+            _capacity = 0;
+            _size = 0;
+            _before_list_pos = -1;
+            _before_list.next = nullptr;
+        }
         ~unordered_set() {
             node* d = nullptr;
             for (node* it = _before_list.next; it; ) {

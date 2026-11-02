@@ -73,7 +73,7 @@ namespace mct {
     template<typename it, typename comp>
     requires mct::random_access_iterator<it> &&
         comparator<comp, decltype(*mct::declval<it>())>
-    it partition(it begin, it end, const comp& cmp) { --end;
+    it partition(it begin, it end, const comp& cmp, int64_t& actions) { --end;
         if (begin == end) { return begin; }
         auto pivot = median(*begin, *end, *(begin+(end-begin)/2));
         it left = begin, right = end;
@@ -83,7 +83,7 @@ namespace mct {
             if (left >= right) {
                 return right;
             }
-            swap(*left, *right);
+            swap(*left, *right); ++actions;
             ++left; --right;
         }
         return left;
@@ -92,11 +92,13 @@ namespace mct {
     template<typename it, typename comp = less<decltype(*mct::declval<it>())>>
     requires mct::random_access_iterator<it> &&
         comparator<comp, decltype(*mct::declval<it>())>
-    void sort(it begin, it end, const comp& cmp = less<decltype(*mct::declval<it>())>{}) {
-        if (end - begin <= 1) { return; }
-        it p = partition(begin, end, cmp);
-        sort(begin, p+1, cmp);
-        sort(p+1, end, cmp);
+    int64_t sort(it begin, it end, const comp& cmp = less<decltype(*mct::declval<it>())>{}) {
+        if (end - begin <= 1) { return 0; }
+        int64_t actions = 0;
+        it p = mct::partition(begin, end, cmp, actions);
+        actions+=sort(begin, p+1, cmp);
+        actions+=sort(p+1, end, cmp);
+        return actions;
     }
 
     template<typename it>
