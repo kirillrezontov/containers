@@ -78,8 +78,8 @@ namespace mct {
         auto pivot = median(*begin, *end, *(begin+(end-begin)/2));
         it left = begin, right = end;
         while (true) {
-            while (cmp(*left, pivot)) { ++left; }
-            while (cmp(pivot, *right)) { --right; }
+            while (cmp(*left, pivot)) { ++left; ++actions;}
+            while (cmp(pivot, *right)) { --right; ++actions;}
             if (left >= right) {
                 return right;
             }
@@ -111,9 +111,9 @@ namespace mct {
         }
     }
 
-    inline int thread_local_rand() {
+    inline int thread_local_rand(int32_t min, int32_t max) {
         thread_local std::mt19937 generator(std::random_device{}());
-        std::uniform_int_distribution distribution(INT32_MIN, INT32_MAX);
+        std::uniform_int_distribution distribution(min, max);
         return distribution(generator);
     }
 }
